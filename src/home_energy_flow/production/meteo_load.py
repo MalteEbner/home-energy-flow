@@ -28,10 +28,18 @@ def load_solar_radiation_data(file_path: Path) -> SolarRadiationData:
 
 def get_meteo_data_per_orientation() -> list[SolarRadiationData]:
     json_files = [
-        Path("meteo_data_source/Timeseries_47.754_8.939_SA3_90deg_-90deg_2020_2023.json"),
-        Path("meteo_data_source/Timeseries_47.754_8.939_SA3_90deg_90deg_2020_2023.json"),
-        Path("meteo_data_source/Timeseries_47.753_8.939_SA3_45deg_-90deg_2020_2023.json"),
-        Path("meteo_data_source/Timeseries_47.753_8.939_SA3_45deg_90deg_2020_2023.json"),
+        Path(
+            "meteo_data_source/Timeseries_47.754_8.939_SA3_90deg_-90deg_2020_2023.json"
+        ),
+        Path(
+            "meteo_data_source/Timeseries_47.754_8.939_SA3_90deg_90deg_2020_2023.json"
+        ),
+        Path(
+            "meteo_data_source/Timeseries_47.753_8.939_SA3_45deg_-90deg_2020_2023.json"
+        ),
+        Path(
+            "meteo_data_source/Timeseries_47.753_8.939_SA3_45deg_90deg_2020_2023.json"
+        ),
     ]
 
     # Load the solar radiation data from both files

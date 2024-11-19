@@ -1,13 +1,8 @@
 # Home Energy Flow
 
+This repository allows you to simulate the electric energy flow in a building with a PV system, a battery, and a specific electric consumption profile, including temperature-dependent heating by a heat pump.
 
-This repository allows to simulate the electric energy flow in a building
-with a PV system, a battery and a certain electric consumption profile including
-temperature-dependent heating by a heatpump.
-
-The simulation is based on the hourly meteorological data for a specific location.
-This includes the solar radiation for the PV system and the outside temperature for the
-heatpump.
+The simulation is based on hourly meteorological data for a specific location. This includes the solar radiation for the PV system and the outside temperature for the heat pump.
 
 ## Example Usage
 
@@ -52,39 +47,39 @@ main(
 
 ![Energy Flow Graph](docs/example_graph.png)
 
-
-
-## Next steps
+## Next Steps
 
 There are many next steps to improve this project:
 
+### Easier usage
+- Add documentation.
+- Add docstrings to all functions.
+- Instead of requiring manual download of the meteorological data, directly get it from the PVGIS API.
+- Publish the package on PyPI.
 
-### Development workflow
+### Development Workflow
 
 To improve the development workflow, the following steps should be taken:
-- Add unittests
-- Add end-to-end tests
-- Add CI for ensuring that the formatting and typechecking is always correct
-- Add CI for the unittests and end-to-end tests
-- Publish the package on PyPi
+- Add unit tests.
+- Add end-to-end tests.
+- Add CI for ensuring that the formatting and type checking are always correct.
+- Add CI for the unit tests and end-to-end tests.
 
 ### Missing Features
 
 New features that could be added are:
-- Instead of requring manual download of the meteo data, directly get it from the PVGIS API.
-- Cost calculations, not only with fixed-price electricity, but also with dynamic prices.
-- Dynamic consumers, e.g. electric cars that can be charged or discharged.
-- More detailed heat pump model, e.g. with a COP that depends on the outside temperature.
-- More detailed PV model, e.g. with a temperature-dependent efficiency.
-- More detailed regular consumption model, e.g. vary it between weekdays and weekends.
-- Optimization options, recommending the best battery size, PV size, etc.
+- Cost calculations, not only with fixed-price electricity but also with dynamic prices.
+- Dynamic consumers, e.g., electric cars that can be charged or discharged.
+- More detailed heat pump model, e.g., with a COP (coefficient of performance) that depends on the outside temperature.
+- More detailed PV model, e.g., with a temperature-dependent efficiency.
+- More detailed regular consumption model, e.g., use the "Standardlastprofile Strom H0" from BDEW.
+- Recommendations based on algorithms to determine the best battery size, PV size, etc.
 
 ## Installation
 
-Create a vitual environment then install the package in the pypackage.toml
+Create a virtual environment, then install the package as specified in the `pyproject.toml`.
 
-We recommend using [uv](https://github.com/astral-sh/uv) as virtual environment,
-project and package manager.
+We recommend using [uv](https://github.com/astral-sh/uv) as a virtual environment, project, and package manager.
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -93,16 +88,6 @@ source .venv/bin/activate
 make install-dev
 ```
 
-
 ## Development
 
-The code is formatted using `ruff` and typechecked using `mypy`.
-To use them, call `make format && make static-checks`.
-
-
-
-
-
-
-
-
+The code is formatted using `ruff` and type-checked using `mypy`. To use them, call `make format && make static-checks`.
