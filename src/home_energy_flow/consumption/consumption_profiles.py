@@ -91,7 +91,7 @@ def generate_typical_consumption_profile(
 
 class HeatPumpSystem(BaseModel):
     yearly_electricity_consumption_kWh: float
-    inside_temp: float = 15.0
+    heating_turnoff_temp: float = 15.0
     heating_times: list[tuple[int, int]] = [(8, 18)]
 
 
@@ -107,7 +107,7 @@ def generate_heatpump_consumption_profile(
     for entry in entries:
         day_key = (entry.time.year, entry.time.month, entry.time.day)
         temp_diff = max(
-            heatpump_system.inside_temp - entry.T2m, 0
+            heatpump_system.heating_turnoff_temp - entry.T2m, 0
         )  # Ensure consumption is positive (no heating when outside is warmer)
         daily_temp_diff[day_key] += temp_diff
 

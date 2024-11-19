@@ -27,7 +27,7 @@ if __name__ == "__main__":
     regular_consumption_kWh = 1000.0
     heatpump_system = HeatPumpSystem(
         yearly_electricity_consumption_kWh=5000.0,
-        inside_temp=15.0,
+        heating_turnoff_temp=13.0,
         heating_times=[(8, 18)],
     )
 

@@ -18,7 +18,7 @@ year = 2023
 # Define the PV system as 4 bifacial modules with 500 Wp each.
 # They are bifacial and thus equivalent to 8 monofacial modules.
 # They are vertically mounted (slope=90) and oriented to the east and west.
-# For legyl reasons, the maximum power is limited to 0.8 kW.
+# For legal reasons, the maximum power is limited to 0.8 kW.
 pv_system_balkonkraftwerk = PVSystem(
     modules=[
         Modules(slope=Slope(value=90), azimuth=Azimuth.EAST(), kWP=0.5, n=4),
@@ -35,7 +35,7 @@ storage_kWh = 2.0
 regular_consumption_kWh = 1000.0
 heatpump_system = HeatPumpSystem(
     yearly_electricity_consumption_kWh=5000.0,
-    inside_temp=15.0,
+    heating_turnoff_temp=13.0,
     heating_times=[(8, 18)],
 )
 
@@ -71,6 +71,7 @@ To improve the development workflow, the following steps should be taken:
 ### Missing Features
 
 New features that could be added are:
+- Instead of requring manual download of the meteo data, directly get it from the PVGIS API.
 - Cost calculations, not only with fixed-price electricity, but also with dynamic prices.
 - Dynamic consumers, e.g. electric cars that can be charged or discharged.
 - More detailed heat pump model, e.g. with a COP that depends on the outside temperature.
