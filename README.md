@@ -69,11 +69,13 @@ To improve the development workflow, the following steps should be taken:
 
 New features that could be added are:
 - Cost calculations, not only with fixed-price electricity but also with dynamic prices.
-- Dynamic consumers, e.g., electric cars that can be charged or discharged.
+- Dynamic consumers, e.g., electric cars that can be charged or discharged or a washing machine that can be delayed.
+- Automatic optimization to decide when to charge and discharge the battery and when to use dynamic consumers.
+- Recommendations to determine the best battery size, PV system size, etc.
+- More detailed regular consumption model, e.g., use the "Standardlastprofile Strom H0" from BDEW.
 - More detailed heat pump model, e.g., with a COP (coefficient of performance) that depends on the outside temperature.
 - More detailed PV model, e.g., with a temperature-dependent efficiency.
-- More detailed regular consumption model, e.g., use the "Standardlastprofile Strom H0" from BDEW.
-- Recommendations based on algorithms to determine the best battery size, PV size, etc.
+
 
 ## Installation
 
