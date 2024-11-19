@@ -63,19 +63,6 @@ class TimeSeriesEntry(BaseModel):
     WS10m: float
     Int: float
 
-    @classmethod
-    def from_dict(cls, data: dict) -> "TimeSeriesEntry":
-        # Convert the 'time' field from string to Time instance
-        time = Time.from_string(data["time"])
-        return cls(
-            time=time,
-            G_i=data["G(i)"],
-            H_sun=data["H_sun"],
-            T2m=data["T2m"],
-            WS10m=data["WS10m"],
-            Int=data["Int"],
-        )
-
 
 class Inputs(BaseModel):
     location: Location

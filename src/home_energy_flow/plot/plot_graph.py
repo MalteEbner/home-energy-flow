@@ -18,7 +18,7 @@ def plot_data_per_month_as_lines(monthly_datas: list[MonthlyData]):
     # Add labels and title
     plt.xlabel("Month")
     plt.ylabel("Energy (kWh)")
-    plt.title("Monthly Energy Production and Consumption")
+    plt.title(f"Monthly Energy Production and Consumption {monthly_datas[0].year}")
 
     # Add grid and legend
     plt.grid(True)
@@ -26,5 +26,19 @@ def plot_data_per_month_as_lines(monthly_datas: list[MonthlyData]):
     plt.legend(loc="upper center")
 
     # Show the plot
-    plt.xticks(months)
+    month_names = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+    ]
+    plt.xticks(months, month_names)
     plt.show()

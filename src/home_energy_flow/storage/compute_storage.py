@@ -1,20 +1,35 @@
+from pydantic import BaseModel
+
+
+class EnergyFlowData(BaseModel):
+    """All data in kWh per time step"""
+
+    energy_buy: list[float]
+    energy_sell: list[float]
+    self_usage: list[float]
+    production: list[float]
+    consumption: list[float]
+
+
 def compute_production_consumption(
-    total_production_kWh: list[float],
-    total_consumption_kWh: list[float],
+    production_kWh: list[float],
+    consumption_kWh: list[float],
     storage_kWh: float = 2.0,
     storage_efficiency: float = 0.9,
-) -> tuple[list[float], list[float], list[float]]:
+) -> EnergyFlowData:
     """
     Compute energy buy, sell, and self-usage considering storage.
 
     Args:
-        total_production_kWh (list[float]): List of production values in kWh.
-        total_consumption_kWh (list[float]): List of consumption values in kWh.
-        storage_kWh (float): Total storage capacity in kWh.
-        storage_efficiency (float): Efficiency of storage (0 < efficiency <= 1).
-
-    Returns:
-        tuple[list[float], list[float], list[float]]: energy_buy, energy_sell, self_usage lists.
+        total_production_kWh:
+            Production per time step in kWh.
+        total_consumption_kWh (list[float]):
+            Consumption per time step in kWh.
+        storage_kWh (float):
+            Total storage capacity in kWh.
+        storage_efficiency:
+            Charge and discharge efficiency of the storage.
+            Must be between 0 and 1.
     """
     # Initialize the lists to store results
     energy_buy = []
@@ -22,14 +37,14 @@ def compute_production_consumption(
     self_usage = []
 
     # Ensure the lengths of both lists are the same
-    assert len(total_production_kWh) == len(
-        total_consumption_kWh
+    assert len(production_kWh) == len(
+        consumption_kWh
     ), "Production and consumption lists must be of the same length."
 
     # Initialize current storage state
     current_storage = 0.0  # Start with empty storage
 
-    for prod, con in zip(total_production_kWh, total_consumption_kWh):
+    for prod, con in zip(production_kWh, consumption_kWh):
         if prod >= con:
             # Surplus energy available
             excess = prod - con
@@ -64,7 +79,7 @@ def compute_production_consumption(
             remaining_deficit = deficit - discharge_energy
 
             # Energy to buy is the remaining deficit
-            _energy_buy = remaining_deficit
+            _energy_buy = max(remaining_deficit, 0.0)
             _energy_sell = 0.0  # No excess to sell
 
         # Self-consumed energy is the minimum of production and consumption
@@ -76,4 +91,10 @@ def compute_production_consumption(
         self_usage.append(_self_usage)
 
     # Return the results as a tuple of lists
-    return energy_buy, energy_sell, self_usage
+    return EnergyFlowData(
+        energy_buy=energy_buy,
+        energy_sell=energy_sell,
+        self_usage=self_usage,
+        production=production_kWh,
+        consumption=consumption_kWh,
+    )

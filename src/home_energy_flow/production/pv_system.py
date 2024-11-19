@@ -4,7 +4,7 @@ from home_energy_flow.production.datamodels import Azimuth
 from home_energy_flow.production.datamodels import Slope
 
 
-class Module(BaseModel):
+class Modules(BaseModel):
     slope: Slope
     azimuth: Azimuth
     kWP: float = 0.5
@@ -12,5 +12,5 @@ class Module(BaseModel):
 
 
 class PVSystem(BaseModel):
-    modules: List[Module]
+    modules: List[Modules]
     maximum_power_kW: float | None = None

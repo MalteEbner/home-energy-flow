@@ -10,7 +10,7 @@ def pprint_data_per_month_as_table(monthly_datas: list[MonthlyData]):
     # Create the table with each row corresponding to a month
     table = []
     for month in months:
-        row = [month]
+        row: list[int | str] = [month]
         for data in monthly_datas:
             row.append(f"{data.data[month-1]:06.1f}")
         table.append(row)
@@ -20,3 +20,8 @@ def pprint_data_per_month_as_table(monthly_datas: list[MonthlyData]):
 
     # Print the table using tabulate
     print(tabulate(table, headers, tablefmt="pretty"))
+
+
+def pprint_data_per_month(data: MonthlyData):
+    formatted_values = " ".join(f"{value:05.1f}" for value in data.data)
+    print(f"{data.name}: {formatted_values}")

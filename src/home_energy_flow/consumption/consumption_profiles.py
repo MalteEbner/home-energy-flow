@@ -1,11 +1,13 @@
 from collections import defaultdict
 from typing import List
-from home_energy_flow.production.meteo_data import TimeSeriesEntry
+
+from pydantic import BaseModel
+from home_energy_flow.production.meteo_datamodels import TimeSeriesEntry
 
 
 def generate_typical_consumption_profile(
     entries,
-    total_consumption_kwh,
+    yearly_consumption_kWh: float,
 ) -> List[float]:
     """
     Generate a typical electricity consumption profile for a household in Germany
@@ -14,12 +16,12 @@ def generate_typical_consumption_profile(
     Args:
         entries:
             Timepoints for each hour of the year.
-        total_consumption_kwh:
+        yearly_consumption_kWh:
             Total desired consumption in kWh for the year.
 
     Returns:
          List of consumption values (in kWh) corresponding to each time entry.
-         The sum of all values in the list will be equal to the total_consumption_kwh.
+         The sum of all values in the list will be equal to the yearly_consumption_kWh.
     """
 
     # Average consumption patterns, simplified example
@@ -77,7 +79,7 @@ def generate_typical_consumption_profile(
 
     # Calculate total hourly consumption factor to scale it up to match the yearly consumption
     total_profile_sum = sum(consumption_profile)
-    scaling_factor = total_consumption_kwh / total_profile_sum
+    scaling_factor = yearly_consumption_kWh / total_profile_sum
 
     # Apply the scaling factor to get the scaled consumption profile
     scaled_consumption_profile = [
@@ -87,49 +89,53 @@ def generate_typical_consumption_profile(
     return scaled_consumption_profile
 
 
+class HeatPumpSystem(BaseModel):
+    yearly_electricity_consumption_kWh: float
+    inside_temp: float = 15.0
+    heating_times: list[tuple[int, int]] = [(8, 18)]
+
+
 def generate_heatpump_consumption_profile(
     entries: List[TimeSeriesEntry],
-    total_electricity_consumption_kwh: float,
-    inside_temp: float = 15.0,
-    heating_times: list[tuple[int, int]] = [(8, 18)],
+    heatpump_system: HeatPumpSystem,
 ) -> List[float]:
     # Prepare a dictionary to accumulate daily consumption needs based on temperature difference
-    daily_temp_diff = defaultdict(float)
+    daily_temp_diff: dict[tuple[int, int, int], float] = defaultdict(float)
     hourly_consumption_profile = []
 
     # Group entries by day and calculate the mean temperature difference for each day
     for entry in entries:
         day_key = (entry.time.year, entry.time.month, entry.time.day)
         temp_diff = max(
-            inside_temp - entry.T2m, 0
+            heatpump_system.inside_temp - entry.T2m, 0
         )  # Ensure consumption is positive (no heating when outside is warmer)
         daily_temp_diff[day_key] += temp_diff
 
     # Calculate total daily temp differences and scale to the total yearly consumption
     total_temp_diff = sum(daily_temp_diff.values())
     scaling_factor = (
-        total_electricity_consumption_kwh / total_temp_diff
+        heatpump_system.yearly_electricity_consumption_kWh / total_temp_diff
         if total_temp_diff > 0
         else 0
     )
 
     # Apply the scaling factor to get the daily consumption in kWh
-    daily_consumption_kwh = {
+    daily_consumption_kWh = {
         day: temp_diff * scaling_factor for day, temp_diff in daily_temp_diff.items()
     }
 
     # Create an hourly consumption profile based on heating times
     for entry in entries:
         day_key = (entry.time.year, entry.time.month, entry.time.day)
-        consumption_for_day = daily_consumption_kwh.get(day_key, 0)
+        consumption_for_day = daily_consumption_kWh.get(day_key, 0)
 
         # Calculate the number of active heating hours for the day
-        heating_hours = sum(end - start for start, end in heating_times)
+        heating_hours = sum(end - start for start, end in heatpump_system.heating_times)
 
         # If the current hour is within the heating period, allocate consumption equally across those hours
         hour_of_day = entry.time.hour
         is_heating_hour = any(
-            start <= hour_of_day < end for start, end in heating_times
+            start <= hour_of_day < end for start, end in heatpump_system.heating_times
         )
 
         if is_heating_hour and heating_hours > 0:

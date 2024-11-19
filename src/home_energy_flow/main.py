@@ -1,131 +1,60 @@
-import json
-from pathlib import Path
-from home_energy_flow.production.datamodels import Azimuth, Slope
+from home_energy_flow.plot.aggregate_monthly_data import aggregate_monthly_data
 import home_energy_flow.storage.compute_storage
-from home_energy_flow.plot.datamodels import MonthlyData
-from home_energy_flow.production.pv_system import Module, PVSystem
-from home_energy_flow.production.meteo_data import SolarRadiationData, Time
-from home_energy_flow.compute import consumption_profiles
-from home_energy_flow.production import compute_production
+from home_energy_flow.production.pv_system import PVSystem
+from home_energy_flow.consumption import consumption_profiles
+from home_energy_flow.production import compute_production, meteo_load
 from home_energy_flow.plot import plot_graph, print_as_table
-
-# Define paths to your JSON files
-json_files = [
-    Path("solar_data/Timeseries_47.754_8.939_SA3_90deg_-90deg_2020_2023.json"),
-    Path("solar_data/Timeseries_47.754_8.939_SA3_90deg_90deg_2020_2023.json"),
-    Path("solar_data/Timeseries_47.753_8.939_SA3_45deg_-90deg_2020_2023.json"),
-    Path("solar_data/Timeseries_47.753_8.939_SA3_45deg_90deg_2020_2023.json"),
-]
+from home_energy_flow.consumption.consumption_profiles import HeatPumpSystem
 
 
-def preprocess_hourly_data(hourly_data: list) -> list:
-    """Preprocess hourly data to convert time strings into Time instances."""
-    preprocessed_data = []
-    for entry in hourly_data:
-        # Convert the 'time' field to a Time instance
-        entry["time"] = Time.from_string(entry["time"])
-        preprocessed_data.append(entry)
-    return preprocessed_data
-
-
-def load_solar_radiation_data(file_path: Path) -> SolarRadiationData:
-    # Read the JSON data from the file
-    with open(file_path, "r") as file:
-        data = json.load(file)
-
-    # Preprocess the 'hourly' data to handle the 'time' conversion
-    data["outputs"]["hourly"] = preprocess_hourly_data(data["outputs"]["hourly"])
-
-    # Convert the data into a SolarRadiationData instance using Pydantic
-    return SolarRadiationData(**data)
-
-
-def aggregate_per_month(times: list[Time], data: list[float], name: str) -> MonthlyData:
-    data_per_month = [0.0] * 12
-    for time, d in zip(times, data):
-        month = time.month
-        data_per_month[month - 1] += d
-
-    return MonthlyData(name=name, data=data_per_month)
-
-
-def pprint_data_per_month(data: MonthlyData):
-    formatted_values = " ".join(f"{value:05.1f}" for value in data.data)
-    print(f"{data.name}: {formatted_values}")
-
-
-def main():
-    # Load the solar radiation data from both files
-    solar_datas = [load_solar_radiation_data(file) for file in json_files]
-
-    # Filter the solar data to include include the year 2023
-    for solar_data in solar_datas:
-        solar_data.outputs.hourly = [
-            entry for entry in solar_data.outputs.hourly if entry.time.year == 2023
+def main(
+    year: int,
+    pv_system: PVSystem,
+    regular_consumption_kWh: float,
+    heatpump_system: HeatPumpSystem,
+    storage_kWh: float,
+) -> None:
+    meteo_data_per_orientation = meteo_load.get_meteo_data_per_orientation()
+    for meteo_data in meteo_data_per_orientation:
+        meteo_data.outputs.hourly = [
+            entry for entry in meteo_data.outputs.hourly if entry.time.year == year
         ]
 
-    pv_system_balkonkraftwerk = PVSystem(
-        modules=[
-            Module(slope=Slope(value=90), azimuth=Azimuth(value=-90), kWP=0.5, n=4),
-            Module(slope=Slope(value=90), azimuth=Azimuth(value=90), kWP=0.5, n=4),
-        ],
-        maximum_power_kW=0.8,
-    )
-
-    pv_system_full = PVSystem(
-        modules=[
-            Module(slope=Slope(value=45), azimuth=Azimuth(value=-90), kWP=0.5, n=4),
-            Module(slope=Slope(value=45), azimuth=Azimuth(value=90), kWP=0.5, n=4),
-        ],
-        maximum_power_kW=10.0,
-    )
-
-    pv_system = pv_system_balkonkraftwerk
-    # pv_system = pv_system_full
-
-    # Calculate the total energy production of the module
+    # Calculate the total energy production of the pv system
     times, total_production = compute_production.compute_production(
-        pv_system, solar_datas
+        pv_system, meteo_data_per_orientation
     )
-    print(f"Total_production: {sum(total_production):06.1f} kWh")
 
     # Model the energy consumption of a household
     regular_consumption = consumption_profiles.generate_typical_consumption_profile(
-        solar_datas[0].outputs.hourly, total_consumption_kwh=1000
+        meteo_data_per_orientation[0].outputs.hourly,
+        yearly_consumption_kWh=regular_consumption_kWh,
     )
     heatpump_consumption = consumption_profiles.generate_heatpump_consumption_profile(
-        solar_datas[0].outputs.hourly,
-        total_electricity_consumption_kwh=3000,
-        inside_temp=15.0,
-        heating_times=[(8, 18)],
+        meteo_data_per_orientation[0].outputs.hourly,
+        heatpump_system=heatpump_system,
     )
     total_consumption = [
         reg + heat for reg, heat in zip(regular_consumption, heatpump_consumption)
     ]
 
-    # Calculate for each time the energy buy, energy sell and engergy self usage
-    energy_buy, energy_sell, self_usage = (
+    # Calculate for each time the energy buy, energy sell and energy self usage
+    energy_flow_data = (
         home_energy_flow.storage.compute_storage.compute_production_consumption(
-            total_production, total_consumption, storage_kWh=2.0
+            total_production, total_consumption, storage_kWh=storage_kWh
         )
     )
 
-    monthly_datas = []
-    for name, values in [
-        ("Total Production", total_production),
-        ("Regular Consumption", regular_consumption),
-        ("Heatpump Consumption", heatpump_consumption),
-        ("Total Consumption", total_consumption),
-        ("Energy Buy", energy_buy),
-        ("Energy Sell", energy_sell),
-        ("Self Usage", self_usage),
-    ]:
-        monthly_data = aggregate_per_month(times, values, name)
-        monthly_datas.append(monthly_data)
-
+    # Visualize the data
+    monthly_datas = aggregate_monthly_data(
+        times,
+        energy_flow_data.production,
+        regular_consumption,
+        heatpump_consumption,
+        energy_flow_data.consumption,
+        energy_flow_data.energy_buy,
+        energy_flow_data.energy_sell,
+        energy_flow_data.self_usage,
+    )
     print_as_table.pprint_data_per_month_as_table(monthly_datas)
     plot_graph.plot_data_per_month_as_lines(monthly_datas)
-
-
-if __name__ == "__main__":
-    main()

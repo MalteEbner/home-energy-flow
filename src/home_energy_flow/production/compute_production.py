@@ -1,5 +1,5 @@
-from home_energy_flow.production.pv_system import Module, PVSystem
-from home_energy_flow.production.meteo_data import (
+from home_energy_flow.production.pv_system import Modules, PVSystem
+from home_energy_flow.production.meteo_datamodels import (
     SolarRadiationData,
     Time,
     TimeSeriesEntry,
@@ -7,7 +7,7 @@ from home_energy_flow.production.meteo_data import (
 
 
 def solar_data_for_module(
-    module: Module, available_data: list[SolarRadiationData]
+    module: Modules, available_data: list[SolarRadiationData]
 ) -> SolarRadiationData:
     # Find the solar radiation data that matches the module's slope and azimuth
     for data in available_data:
@@ -19,7 +19,9 @@ def solar_data_for_module(
     raise ValueError("No matching solar radiation data found")
 
 
-def compute_production_single_module(module: Module, solar_data: list[TimeSeriesEntry]):
+def compute_production_single_module(
+    module: Modules, solar_data: list[TimeSeriesEntry]
+):
     """
     Compute the total energy production of a module using the given solar radiation data.
     """
@@ -37,10 +39,12 @@ def compute_production(system: PVSystem, all_solar_data: list[SolarRadiationData
     # Assert that the times of all solar data sets are the same
     times: list[Time] = [data.time for data in all_solar_data[0].outputs.hourly]
     for data in all_solar_data[1:]:
-        data = data.outputs.hourly
-        assert len(data) == len(times), "Length of solar data sets do not match"
-        assert data[0].time == times[0], "Times of solar data sets do not match"
-        assert data[-1].time == times[-1], "Times of solar data sets do not match"
+        hourly_data = data.outputs.hourly
+        assert len(hourly_data) == len(times), "Length of solar data sets do not match"
+        assert hourly_data[0].time == times[0], "Times of solar data sets do not match"
+        assert (
+            hourly_data[-1].time == times[-1]
+        ), "Times of solar data sets do not match"
 
     production_per_module = []
     for i, module in enumerate(system.modules):
