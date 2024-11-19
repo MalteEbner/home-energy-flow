@@ -2,7 +2,8 @@ import re
 from pydantic import BaseModel, Field
 from typing import Optional
 
-from solar_production.datamodel.common_data import Azimuth, Slope
+from home_energy_flow.production.datamodels import Azimuth
+from home_energy_flow.production.datamodels import Slope
 
 
 class Location(BaseModel):

@@ -1,5 +1,5 @@
 [project]
-name = "solar_production"
+name = "home_energy_flow"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"

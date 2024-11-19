@@ -1,5 +1,5 @@
-from solar_production.datamodel.pv_data import Module, PVSystem
-from solar_production.datamodel.solar_data import (
+from home_energy_flow.production.pv_system import Module, PVSystem
+from home_energy_flow.production.meteo_data import (
     SolarRadiationData,
     Time,
     TimeSeriesEntry,

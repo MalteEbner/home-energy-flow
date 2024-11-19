@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional
-from solar_production.datamodel.common_data import Azimuth, Slope
+from pydantic import BaseModel
+from typing import List
+from home_energy_flow.production.datamodels import Azimuth
+from home_energy_flow.production.datamodels import Slope
 
 
 class Module(BaseModel):

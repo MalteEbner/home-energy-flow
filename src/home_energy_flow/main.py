@@ -1,13 +1,13 @@
-import copy
 import json
 from pathlib import Path
-from pprint import pprint
-import solar_production.compute.compute_storage
-from solar_production.datamodel.common_data import Azimuth, MonthlyData, Slope
-from solar_production.datamodel.pv_data import Module, PVSystem
-from solar_production.datamodel.solar_data import SolarRadiationData, Time
-from solar_production.compute import compute_consumption, compute_production
-from solar_production.visualize import plot, print_as_table
+from home_energy_flow.production.datamodels import Azimuth, Slope
+import home_energy_flow.storage.compute_storage
+from home_energy_flow.plot.datamodels import MonthlyData
+from home_energy_flow.production.pv_system import Module, PVSystem
+from home_energy_flow.production.meteo_data import SolarRadiationData, Time
+from home_energy_flow.compute import consumption_profiles
+from home_energy_flow.production import compute_production
+from home_energy_flow.plot import plot_graph, print_as_table
 
 # Define paths to your JSON files
 json_files = [
@@ -90,10 +90,10 @@ def main():
     print(f"Total_production: {sum(total_production):06.1f} kWh")
 
     # Model the energy consumption of a household
-    regular_consumption = compute_consumption.generate_typical_consumption_profile(
+    regular_consumption = consumption_profiles.generate_typical_consumption_profile(
         solar_datas[0].outputs.hourly, total_consumption_kwh=1000
     )
-    heatpump_consumption = compute_consumption.generate_heatpump_consumption_profile(
+    heatpump_consumption = consumption_profiles.generate_heatpump_consumption_profile(
         solar_datas[0].outputs.hourly,
         total_electricity_consumption_kwh=3000,
         inside_temp=15.0,
@@ -105,7 +105,7 @@ def main():
 
     # Calculate for each time the energy buy, energy sell and engergy self usage
     energy_buy, energy_sell, self_usage = (
-        solar_production.compute.compute_storage.compute_production_consumption(
+        home_energy_flow.storage.compute_storage.compute_production_consumption(
             total_production, total_consumption, storage_kWh=2.0
         )
     )
@@ -124,7 +124,7 @@ def main():
         monthly_datas.append(monthly_data)
 
     print_as_table.pprint_data_per_month_as_table(monthly_datas)
-    plot.plot_data_per_month_as_lines(monthly_datas)
+    plot_graph.plot_data_per_month_as_lines(monthly_datas)
 
 
 if __name__ == "__main__":

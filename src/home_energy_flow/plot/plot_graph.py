@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-from solar_production.datamodel.common_data import MonthlyData
+from home_energy_flow.plot.datamodels import MonthlyData
 
 
 def plot_data_per_month_as_lines(monthly_datas: list[MonthlyData]):

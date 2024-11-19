@@ -1,23 +1,31 @@
 from collections import defaultdict
 from typing import List
-from solar_production.datamodel.solar_data import TimeSeriesEntry, Time
+from home_energy_flow.production.meteo_data import TimeSeriesEntry
 
 
 def generate_typical_consumption_profile(
-    entries: List[TimeSeriesEntry], total_consumption_kwh: float
+    entries,
+    total_consumption_kwh,
 ) -> List[float]:
     """
     Generate a typical electricity consumption profile for a household in Germany
     based on a list of TimeSeriesEntry, scaled to match a given total consumption in kWh per year.
 
-    :param entries: List of TimeSeriesEntry (typically for each hour of a year)
-    :param total_consumption_kwh: Total desired consumption in kWh for the year.
-    :return: List of consumption values (in kWh) corresponding to each time entry.
+    Args:
+        entries:
+            Timepoints for each hour of the year.
+        total_consumption_kwh:
+            Total desired consumption in kWh for the year.
+
+    Returns:
+         List of consumption values (in kWh) corresponding to each time entry.
+         The sum of all values in the list will be equal to the total_consumption_kwh.
     """
 
-    # Average consumption patterns (this is a simplified example based on general trends)
-    # Morning and evening peaks, lower during night and mid-day (work hours)
-    typical_daily_profile = [
+    # Average consumption patterns, simplified example
+    # Higher consumption in the morning and evening, lower consumption during the night.
+    # TODO(Malte, 11/24): Replace this with a "Standardlastprofile Strom H0" from BDEW
+    typical_daily_profile_first_half = [
         0.08,
         0.07,
         0.06,
@@ -29,7 +37,9 @@ def generate_typical_consumption_profile(
         0.10,
         0.12,
         0.13,
-        0.10,  # 00:00 - 11:00
+        0.10,
+    ]
+    typical_daily_profile_second_half = [
         0.09,
         0.08,
         0.06,
@@ -43,6 +53,9 @@ def generate_typical_consumption_profile(
         0.10,
         0.09,  # 12:00 - 23:00
     ]
+    typical_daily_profile = (
+        typical_daily_profile_first_half + typical_daily_profile_second_half
+    )
 
     # Scale this daily profile so it adds up to 1 (this assumes 1 kWh total per day)
     profile_sum = sum(typical_daily_profile)

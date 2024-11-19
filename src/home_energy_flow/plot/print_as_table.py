@@ -1,6 +1,6 @@
 from tabulate import tabulate
 
-from solar_production.datamodel.common_data import MonthlyData
+from home_energy_flow.plot.datamodels import MonthlyData
 
 
 def pprint_data_per_month_as_table(monthly_datas: list[MonthlyData]):

@@ -9,8 +9,3 @@ class Azimuth(BaseModel):
 class Slope(BaseModel):
     value: float
     optimal: bool = False
-
-
-class MonthlyData(BaseModel):
-    name: str
-    data: list[float]
