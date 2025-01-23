@@ -14,3 +14,4 @@ class Modules(BaseModel):
 class PVSystem(BaseModel):
     modules: List[Modules]
     maximum_power_kW: float | None = None
+    performance_ratio: float = 0.8

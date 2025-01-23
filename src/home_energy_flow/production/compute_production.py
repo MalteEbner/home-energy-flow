@@ -20,14 +20,14 @@ def solar_data_for_module(
 
 
 def compute_production_single_module(
-    module: Modules, solar_data: list[TimeSeriesEntry]
+    module: Modules, solar_data: list[TimeSeriesEntry], performance_ratio: float
 ):
     """
     Compute the total energy production of a module using the given solar radiation data.
     """
     energy_kWh: list[float] = []
     for entry in solar_data:
-        energy_Wh = module.kWP * entry.G_i * module.n
+        energy_Wh = module.kWP * entry.G_i * module.n * performance_ratio
         energy_kWh.append(energy_Wh / 1000)
     return energy_kWh
 
@@ -51,7 +51,9 @@ def compute_production(system: PVSystem, all_solar_data: list[SolarRadiationData
         # Find the solar radiation data that matches the module's slope and azimuth
         solar_data = solar_data_for_module(module, all_solar_data)
 
-        production = compute_production_single_module(module, solar_data.outputs.hourly)
+        production = compute_production_single_module(
+            module, solar_data.outputs.hourly, system.performance_ratio
+        )
         production_per_module.append(production)
 
     # Sum the energy production of all modules for each time step
