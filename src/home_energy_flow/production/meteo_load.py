@@ -40,6 +40,9 @@ def get_meteo_data_per_orientation() -> list[SolarRadiationData]:
         Path(
             "meteo_data_source/Timeseries_47.753_8.939_SA3_45deg_90deg_2020_2023.json"
         ),
+        Path(
+            "meteo_data_source/Timeseries_47.755_8.938_SA3_30deg_0deg_2020_2023.json"
+        ),
     ]
 
     # Load the solar radiation data from both files
